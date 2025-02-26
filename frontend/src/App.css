@@ -1,0 +1,268 @@
+/* Main App Styles */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+  background-color: #f0f2f5;
+}
+
+.app {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+h1 {
+  text-align: center;
+  color: #2b5876;
+}
+
+/* Controls Section */
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 20px;
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@media (min-width: 768px) {
+  .controls {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .room-controls,
+  .media-controls {
+    flex: 1;
+    min-width: 300px;
+  }
+}
+
+.controls label {
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+.controls input {
+  padding: 8px;
+  margin-right: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.controls button {
+  padding: 8px 12px;
+  margin-right: 10px;
+  background-color: #4e84c4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.controls button:hover {
+  background-color: #2b5876;
+}
+
+.controls button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.controls button.active {
+  background-color: #e74c3c;
+}
+
+/* Notification */
+#notification {
+  text-align: center;
+  padding: 10px;
+  background-color: #fafafa;
+  border-left: 4px solid #4e84c4;
+  margin: 15px 0;
+  border-radius: 0 4px 4px 0;
+  transition: opacity 0.5s;
+}
+
+#notification.hidden {
+  opacity: 0;
+}
+
+#notification.visible {
+  opacity: 1;
+}
+
+/* Video Grid */
+.videos-section {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.grid-item {
+  background-color: #333;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+.grid-item p {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 5px 10px;
+  border-radius: 4px;
+  margin: 0;
+  z-index: 2;
+}
+
+.grid-item video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.kick_btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+  z-index: 2;
+}
+
+/* Local Video */
+#localVideo-container {
+  position: absolute;
+  width: 200px;
+  height: 150px;
+  bottom: 20px;
+  right: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #000;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  z-index: 100;
+}
+
+#localVideo-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.local-controls {
+  position: absolute;
+  bottom: 5px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  padding: 5px;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.control-btn {
+  background-color: transparent;
+  border: none;
+  color: white;
+  font-size: 16px;
+  margin: 0 5px;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.control-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.control-btn.muted,
+.control-btn.active {
+  color: #e74c3c;
+}
+
+/* Chat Container */
+#chat-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#chat-messages {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 15px;
+}
+
+.chat-message {
+  margin-bottom: 10px;
+  word-wrap: break-word;
+}
+
+#chat-input-container {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #eee;
+}
+
+#chat-input {
+  flex-grow: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px 0 0 4px;
+}
+
+#send-chat-btn {
+  padding: 8px 15px;
+  background-color: #4e84c4;
+  color: white;
+  border: none;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+}
+
+/* Subtitles Container */
+#subtitles-container {
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  text-align: center;
+  z-index: 1000;
+}
+
+#subtitles {
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  display: inline-block;
+  max-width: 100%;
+}
