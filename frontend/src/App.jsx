@@ -7,7 +7,16 @@ import Notification from "../src/components/Notification";
 import VideoGrid from "../src/components/VideoGrid";
 import Subtitles from "../src/components/Subtitles";
 import "./App.css";
+import Whiteboard from "../src/components/Whiteboard";
 import { io } from "socket.io-client";
+import { Buffer } from "buffer";
+window.global = window;
+window.Buffer = Buffer;
+window.process = {
+  env: { NODE_ENV: process.env.NODE_ENV },
+  version: "",
+  nextTick: (callback) => setTimeout(callback, 0),
+};
 
 function App() {
   const [notification, setNotification] = useState("");
@@ -210,6 +219,12 @@ function App() {
       </div>
 
       {inRoom && <Chat webrtc={webrtc} />}
+      {inRoom && (
+        <>
+          <Whiteboard roomId={roomId} inRoom={inRoom} />
+          <Chat webrtc={webrtc} />
+        </>
+      )}
 
       {subtitlesActive && <Subtitles localStream={localStream} />}
     </div>

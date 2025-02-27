@@ -1,20 +1,25 @@
 // server.js
 const express = require("express");
 const http = require("http");
-const socketIO = require("socket.io");
+const { Server } = require("socket.io");
 const cors = require("cors");
 
 const app = express();
 const server = http.createServer(app);
 
-// Enable CORS for all routes and Socket.io
+// Enable CORS for all routes
 app.use(cors());
 
-const io = socketIO(server, {
+// Set up Socket.IO
+const io = new Server(server, {
   cors: {
-    origin: "*", // In production, set this to your frontend URL
+    origin: "*",
     methods: ["GET", "POST"],
+    credentials: true,
   },
+  // Force Socket.IO to only use polling (no WebSocket)
+  // This will prevent conflicts with our raw WebSocket server
+  transports: ["polling"],
 });
 
 // Simple health check route
@@ -24,7 +29,7 @@ app.get("/health", (req, res) => {
 
 // Socket.io connection handling
 io.on("connection", (socket) => {
-  console.log(`User connected: ${socket.id}`);
+  console.log(`Socket.IO user connected: ${socket.id}`);
 
   // Log function for server messages
   function log(...args) {
@@ -59,7 +64,11 @@ io.on("connection", (socket) => {
 
   // Handle message passing (for WebRTC signaling)
   socket.on("message", (message, toId = null, room = null) => {
-    log(`Client ${socket.id} sent message: ${message.type}`);
+    if (message && message.type) {
+      log(`Client ${socket.id} sent message: ${message.type}`);
+    } else {
+      log(`Client ${socket.id} sent message`);
+    }
 
     if (toId) {
       // Direct message to specific user
@@ -118,11 +127,11 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    console.log(`User disconnected: ${socket.id}`);
+    console.log(`Socket.IO user disconnected: ${socket.id}`);
   });
 });
 
 const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Socket.IO server running on port ${PORT}`);
 });
