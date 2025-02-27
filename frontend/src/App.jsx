@@ -6,6 +6,8 @@ import LocalVideo from "../src/components/LocalVideo";
 import Notification from "../src/components/Notification";
 import VideoGrid from "../src/components/VideoGrid";
 import Subtitles from "../src/components/Subtitles";
+import CodeEditor from "../src/components/CodeEditor";
+import Compiler from "../src/components/CodeEditor";
 import "./App.css";
 import { io } from "socket.io-client";
 
@@ -20,6 +22,8 @@ function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [subtitlesActive, setSubtitlesActive] = useState(false);
+  const [code, setCode] = useState("");
+  const [showCodeEditor, setShowCodeEditor] = useState(false);
 
   // Initialize WebRTC service
   useEffect(() => {
@@ -176,6 +180,32 @@ function App() {
     setNotification(subtitlesActive ? "Subtitles Off" : "Subtitles On");
   };
 
+  const toggleCodeEditor = () => {
+    setShowCodeEditor(!showCodeEditor);
+    setNotification(
+      showCodeEditor ? "Code Editor Closed" : "Code Editor Opened"
+    );
+  };
+
+  const handleCodeChange = (newCode) => {
+    setCode(newCode);
+  };
+
+  const handleCompile = async () => {
+    try {
+      if (!webrtc) {
+        setNotification("WebRTC service not initialized");
+        return;
+      }
+
+      const result = await webrtc.compileCode(code, "javascript");
+      return result;
+    } catch (error) {
+      setNotification(`Compilation error: ${error.message}`);
+      return { error: error.message };
+    }
+  };
+
   return (
     <div className="app">
       <h1>
@@ -195,6 +225,8 @@ function App() {
         inRoom={inRoom}
         onToggleSubtitles={toggleSubtitles}
         subtitlesActive={subtitlesActive}
+        onToggleCodeEditor={toggleCodeEditor}
+        showCodeEditor={showCodeEditor}
       />
 
       <Notification message={notification} />
@@ -212,8 +244,16 @@ function App() {
       {inRoom && <Chat webrtc={webrtc} />}
 
       {subtitlesActive && <Subtitles localStream={localStream} />}
+
+      {showCodeEditor && inRoom && (
+        <div className="code-editor-section">
+          <CodeEditor code={code} onChange={handleCodeChange} />
+          <Compiler code={code} onCompile={handleCompile} />
+        </div>
+      )}
     </div>
   );
 }
 
 export default App;
+// Compare this snippet from frontend/src/components/Chat.jsx:n=

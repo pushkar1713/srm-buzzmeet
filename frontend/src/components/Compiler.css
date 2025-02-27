@@ -1,0 +1,73 @@
+.compiler {
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.compiler-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.compiler h3 {
+  color: #ffffff;
+  margin: 0;
+}
+
+.compile-button {
+  background-color: #0078d7;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.compile-button:hover {
+  background-color: #0063b1;
+}
+
+.compile-button:disabled {
+  background-color: #666;
+  cursor: not-allowed;
+}
+
+.compiler-result {
+  background-color: #2d2d2d;
+  border-radius: 4px;
+  padding: 12px;
+  overflow: auto;
+  max-height: 300px;
+}
+
+.compiler-result h4 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  color: #ffffff;
+}
+
+.compiler-result pre {
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: "Consolas", "Monaco", "Courier New", monospace;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.compiler-result.success {
+  border-left: 4px solid #13a10e;
+}
+
+.compiler-result.error {
+  border-left: 4px solid #d83b01;
+}
+
+.compiler-result.error pre {
+  color: #f1707b;
+}

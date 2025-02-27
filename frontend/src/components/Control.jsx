@@ -13,8 +13,10 @@ function Controls({
   inRoom,
   onToggleSubtitles,
   subtitlesActive,
-  onToggleWhiteboard, // Add this prop
-  showWhiteboard, // Add this prop
+  onToggleWhiteboard,
+  showWhiteboard,
+  onToggleCodeEditor,
+  showCodeEditor,
 }) {
   return (
     <div style={styles.container}>
@@ -71,7 +73,6 @@ function Controls({
         💬 {subtitlesActive ? "Sub Off" : "Sub On"}
       </button>
 
-      {/* Add the Whiteboard Toggle Button */}
       <button
         onClick={onToggleWhiteboard}
         disabled={!inRoom}
@@ -81,6 +82,18 @@ function Controls({
         }}
       >
         🎨 {showWhiteboard ? "Hide Whiteboard" : "Show Whiteboard"}
+      </button>
+
+      {/* Add the Code Editor Toggle Button */}
+      <button
+        onClick={onToggleCodeEditor}
+        disabled={!inRoom}
+        style={{
+          ...styles.button,
+          backgroundColor: showCodeEditor ? "#4C7273" : "#041421",
+        }}
+      >
+        💻 {showCodeEditor ? "Hide Code" : "Show Code"}
       </button>
     </div>
   );

@@ -3,7 +3,14 @@ body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0; /* Remove padding to avoid extra space */
-  background: linear-gradient(135deg, #041421, #1b3a4b, #2f5c72, #4C7273, #6d8fa3);
+  background: linear-gradient(
+    135deg,
+    #041421,
+    #1b3a4b,
+    #2f5c72,
+    #4c7273,
+    #6d8fa3
+  );
   background-size: 400% 400%;
   animation: gradientBG 10s ease infinite;
   display: flex;
@@ -14,9 +21,15 @@ body {
 
 /* Gradient Animation */
 @keyframes gradientBG {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 /* App Container */
@@ -59,7 +72,8 @@ h1 {
     flex-wrap: wrap;
     justify-content: space-between;
   }
-  .room-controls, .media-controls {
+  .room-controls,
+  .media-controls {
     flex: 1;
     min-width: 300px;
   }
@@ -225,7 +239,33 @@ h1 {
   background-color: rgba(0, 0, 0, 0.5);
   transition: opacity 0.3s ease-in-out;
 }
+/* Add this to your existing App.css file */
 
+.code-editor-section {
+  background-color: #252526;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Update these existing styles as needed */
+.app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+/* Style for the room controls with code editor button */
+.room-controls .code-editor-btn {
+  background-color: #444;
+  color: white;
+}
+
+.room-controls .code-editor-btn.active {
+  background-color: #0078d7;
+}
 .control-btn {
   background-color: transparent;
   border: none;
@@ -245,7 +285,8 @@ h1 {
   background-color: rgba(255, 255, 255, 0.2);
 }
 
-.control-btn.muted, .control-btn.active {
+.control-btn.muted,
+.control-btn.active {
   color: #e74c3c;
 }
 
