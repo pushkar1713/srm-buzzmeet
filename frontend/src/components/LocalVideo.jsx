@@ -52,9 +52,12 @@ function LocalVideo({ stream, webrtc }) {
   const handleMouseDown = (e) => {
     if (containerRef.current) {
       setIsDragging(true);
+
+      // Calculate the offset relative to the container's position
+      const rect = containerRef.current.getBoundingClientRect();
       setOffset({
-        x: e.clientX - containerRef.current.getBoundingClientRect().left,
-        y: e.clientY - containerRef.current.getBoundingClientRect().top,
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
       });
     }
   };
@@ -114,6 +117,8 @@ function LocalVideo({ stream, webrtc }) {
     } catch (err) {
       console.error("Screen share error:", err);
     }
+    console.log("Offset:", offset);
+console.log("Position:", position);
   };
 
   const stopScreenShare = () => {

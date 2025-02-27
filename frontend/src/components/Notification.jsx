@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
+import "./Notification.css";
 
-function Notification({ message }) {
+function Notification({ message, onClose }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -8,17 +9,30 @@ function Notification({ message }) {
       setVisible(true);
       const timer = setTimeout(() => {
         setVisible(false);
-      }, 5000); // Hide after 5 seconds
-
+        // Check if onClose is a function before calling it
+        if (typeof onClose === "function") {
+          onClose();
+        }
+      }, 5000);
       return () => clearTimeout(timer);
     }
-  }, [message]);
+  }, [message, onClose]);
+
+  // If there's no message, don't render the notification
+  if (!message) {
+    return null;
+  }
 
   return (
-    <p id="notification" className={visible ? "visible" : "hidden"}>
+    <div className={`notification ${visible ? "visible" : "hidden"}`}>
       {message}
-    </p>
+    </div>
   );
 }
+
+// Add default prop for onClose to prevent errors
+Notification.defaultProps = {
+  onClose: () => {}, // Default empty function
+};
 
 export default Notification;
