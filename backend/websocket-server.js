@@ -1,49 +1,42 @@
-// websocket-server.js
 const WebSocket = require("ws");
 const http = require("http");
 
-// Create a simple HTTP server
 const server = http.createServer((req, res) => {
-  res.writeHead(200, { "Content-Type": "text/plain" });
-  res.end("WebSocket Server for y-webrtc");
+  res.writeHead(200);
+  res.end("y-webrtc signaling server");
 });
 
-// Create WebSocket server
 const wss = new WebSocket.Server({ server });
 
-console.log("WebSocket server for y-webrtc signaling starting...");
+// Proper heartbeat implementation
+const interval = setInterval(() => {
+  wss.clients.forEach((ws) => {
+    if (!ws.isAlive) return ws.terminate();
+    ws.isAlive = false;
+    ws.ping();
+  });
+}, 30000);
 
-// Handle connections
 wss.on("connection", (ws) => {
-  console.log("Client connected to signaling server");
+  ws.isAlive = true;
 
-  // Handle messages from clients
+  ws.on("pong", () => {
+    ws.isAlive = true;
+    console.log("Received pong from client");
+  });
+
   ws.on("message", (message) => {
-    console.log("Received message, broadcasting to other clients");
-
-    // Broadcast to all other connected clients
+    // Broadcast to ALL clients including sender
     wss.clients.forEach((client) => {
-      if (client !== ws && client.readyState === WebSocket.OPEN) {
-        try {
-          client.send(message);
-        } catch (err) {
-          console.error("Error sending message:", err);
-        }
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(message);
       }
     });
   });
 
-  ws.on("error", (error) => {
-    console.error("WebSocket error:", error);
-  });
-
-  ws.on("close", () => {
-    console.log("Client disconnected from signaling server");
-  });
+  console.log("New client connected");
 });
 
-// Start server
-const PORT = process.env.WS_PORT || 8081;
-server.listen(PORT, () => {
-  console.log(`WebSocket signaling server running on port ${PORT}`);
+server.listen(8081, () => {
+  console.log("Signaling server running on ws://localhost:8081");
 });
