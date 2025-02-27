@@ -1,10 +1,10 @@
-// src/services/WebRTCService.js
 import { io } from "socket.io-client";
 
 class WebRTCService {
   constructor(
     pcConfig = null,
-    logging = { log: true, warn: true, error: true }
+    logging = { log: true, warn: true, error: true },
+    config = {}
   ) {
     this.room = null;
     this.socket = null;
@@ -45,6 +45,10 @@ class WebRTCService {
     this._mediaRecorder = null;
     this._recordedChunks = [];
     this.eventListeners = {};
+    
+    // Hardcoded Gemini API key as requested
+    this.geminiKey = "AIzaSyBrpwAvs2d5KyXmatO_j2zFDPZojqoOEI0";
+    this.chatHistory = {}; // Store conversation history per room
 
     // Manage logging
     this.log = logging.log ? console.log : () => {};
@@ -110,40 +114,150 @@ class WebRTCService {
     });
   }
 
-  _handleChatbotPrompt(prompt) {
-    // Simple chatbot logic (replace with API call if needed)
-    let response = "I'm sorry, I didn't understand that.";
-    if (prompt.toLowerCase().includes("hello")) {
-      response = "Hello! How can I assist you today?";
-    } else if (prompt.toLowerCase().includes("how are you")) {
-      response = "I'm just a bot, but I'm here to help!";
-    } else if (prompt.toLowerCase().includes("thank you")) {
-      response = "You're welcome!";
-    } else if (prompt.toLowerCase().includes("goodbye")) {
-      response = "Goodbye! Have a nice day!";
-    } else if (prompt.toLowerCase().includes("bye")) {
-      response = "Goodbye! Have a nice day!";
-    } else if (prompt.toLowerCase().includes("hi")) {
-      response = "Hello! How can I assist you today?";
-    } else if (prompt.toLowerCase().includes("foss hack")) {
-      response =
-        "The FOSS Hack is a hackathon event held by the FOSS community to promote open-source software development and innovation.";
+  async _handleChatbotPrompt(prompt) {
+    // Check if Gemini API key is available
+    if (!this.geminiKey) {
+      const errorMessage = "Gemini API key is not configured. Please set it up to use the AI bot.";
+      this._sendMessage(
+        { type: "chat", message: errorMessage, senderName: "AI Bot" },
+        null,
+        this.room
+      );
+      
+      this._emit("chatMessage", {
+        message: errorMessage,
+        senderName: "AI Bot",
+      });
+      
+      this.error("Gemini API Error: Missing API key");
+      return;
     }
 
-    // Broadcast the AI's response to everyone in the room
+    // Show a "typing" indicator
     this._sendMessage(
-      { type: "chat", message: response, senderName: "AI Bot" },
-      null, // Send to all users (broadcast)
+      { type: "chat", message: "Thinking...", senderName: "AI Bot (typing)" },
+      null,
       this.room
     );
 
-    // Emit the AI's response locally so the sender can see it
-    this._emit("chatMessage", {
-      message: response,
-      senderName: "AI Bot",
-    });
+    try {
+      // Initialize chat history for this room if it doesn't exist
+      if (!this.chatHistory[this.room]) {
+        this.chatHistory[this.room] = [];
+      }
+
+      // Add the user's message to chat history
+      this.chatHistory[this.room].push({
+        role: "user",
+        parts: [{ text: prompt }]
+      });
+
+      // Prepare the chat request
+      const chatHistory = this.chatHistory[this.room];
+      
+      // Call the Gemini API
+      const response = await this._callGeminiAPI(prompt, chatHistory);
+
+      // Add the AI's response to chat history
+      this.chatHistory[this.room].push({
+        role: "model",
+        parts: [{ text: response }]
+      });
+
+      // Broadcast the AI's response to everyone in the room
+      this._sendMessage(
+        { type: "chat", message: response, senderName: "AI Bot" },
+        null, // Send to all users (broadcast)
+        this.room
+      );
+
+      // Emit the AI's response locally so the sender can see it
+      this._emit("chatMessage", {
+        message: response,
+        senderName: "AI Bot",
+      });
+    } catch (error) {
+      // Handle errors
+      const errorMessage = `Sorry, I encountered an error: ${error.message}`;
+      this._sendMessage(
+        { type: "chat", message: errorMessage, senderName: "AI Bot" },
+        null,
+        this.room
+      );
+      
+      this._emit("chatMessage", {
+        message: errorMessage,
+        senderName: "AI Bot",
+      });
+      
+      this.error("Gemini API Error:", error);
+    }
   }
 
+  async _callGeminiAPI(prompt, chatHistory) {
+    try {
+      // Use the hardcoded API key
+      const apiKey = this.geminiKey;
+      
+      // Updated API URL - using v1 instead of v1beta
+      const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+      
+      const requestBody = {
+        contents: chatHistory,
+        generationConfig: {
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 1024,
+        },
+        safetySettings: [
+          {
+            category: "HARM_CATEGORY_HARASSMENT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          },
+          {
+            category: "HARM_CATEGORY_HATE_SPEECH",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          },
+          {
+            category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          },
+          {
+            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          }
+        ]
+      };
+  
+      this.log("Sending request to Gemini API");
+  
+      const response = await fetch(`${url}?key=${apiKey}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        this.error("Gemini API error response:", errorData);
+        throw new Error(errorData.error?.message || "Unknown API error");
+      }
+  
+      const data = await response.json();
+      
+      // Extract the response text from Gemini
+      const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text || 
+        "I'm sorry, I couldn't generate a response.";
+        
+      return generatedText;
+    } catch (error) {
+      this.error("Error calling Gemini API:", error);
+      throw error;
+    }
+  }
   get localStream() {
     return this._localStream;
   }
@@ -206,6 +320,11 @@ class WebRTCService {
     }
     this.isInitiator = false;
     this.socket.emit("leave room", this.room);
+    
+    // Clear chat history for this room
+    if (this.chatHistory[this.room]) {
+      delete this.chatHistory[this.room];
+    }
   }
 
   // Get local stream
@@ -353,6 +472,12 @@ class WebRTCService {
 
         this.room = null;
         this._removeUser();
+        
+        // Clear chat history for this room
+        if (this.chatHistory[room]) {
+          delete this.chatHistory[room];
+        }
+        
         this._emit("leftRoom", {
           roomId: room,
         });
@@ -366,7 +491,6 @@ class WebRTCService {
       this.isReady = true;
 
       // Dispatch custom event
-      const event = new Event("newJoin");
       this._emit("newJoin");
     });
 
