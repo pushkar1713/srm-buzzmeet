@@ -54,7 +54,7 @@ class WebRTCService {
 
   // Initialize socket connection
   init() {
-    this.socket = io("http://localhost:8080");
+    this.socket = io("https://srm-buzzmeet-backend.onrender.com");
     this._onSocketListeners();
     return this;
   }
