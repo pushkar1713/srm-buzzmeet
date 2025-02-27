@@ -13,8 +13,8 @@ function Controls({
   inRoom,
   onToggleSubtitles,
   subtitlesActive,
-  onToggleWhiteboard, // Add this prop
-  showWhiteboard, // Add this prop
+  onToggleWhiteboard,
+  showWhiteboard,
 }) {
   return (
     <div style={styles.container}>
@@ -47,7 +47,10 @@ function Controls({
       <button
         onClick={onStartRecording}
         disabled={!inRoom || isRecording}
-        style={styles.button}
+        style={{
+          ...styles.button,
+          backgroundColor: isRecording ? "#f44336" : "#4C7273",
+        }}
       >
         <i className="fa-solid fa-circle"></i> Rec
       </button>
@@ -71,7 +74,6 @@ function Controls({
         💬 {subtitlesActive ? "Sub Off" : "Sub On"}
       </button>
 
-      {/* Add the Whiteboard Toggle Button */}
       <button
         onClick={onToggleWhiteboard}
         disabled={!inRoom}
