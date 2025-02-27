@@ -109,32 +109,29 @@ function Subtitles() {
   }, []);
 
   return (
-    <div style={{ display: "flex", justifyContent: "space-between" }}>
+    <div style={{ display: "flex", gap: "20px", alignItems: "flex-start" }}>
       {/* Transcript Container */}
-      <div id="subtitles-container" style={{ flex: 1, marginRight: "20px" }}>
-        <h2>Meeting Transcript</h2>
-        <p id="subtitles">
+      <div style={{ flex: 1, maxHeight: "200px", overflowY: "auto", border: "1px solid #ddd", padding: "10px" }}>
+        <p style={{ margin: 0 }}>
           {state.final} {/* Display final transcript */}
-          <span style={{ color: "gray" }}>{state.interim}</span> {/* Display interim transcript in gray */}
+          <span style={{ color: "#888" }}>{state.interim}</span> {/* Display interim transcript in gray */}
         </p>
       </div>
 
-      {/* Button Container */}
-      <div style={{ width: "200px", textAlign: "right" }}>
-        <button
-          onClick={handleTranscriptAction}
-          style={{
-            padding: "10px 20px",
-            backgroundColor: "#007bff",
-            color: "#fff",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-          }}
-        >
-          Save or Discard Transcript
-        </button>
-      </div>
+      {/* Save/Discard Button */}
+      <button
+        onClick={handleTranscriptAction}
+        style={{
+          padding: "8px 16px",
+          backgroundColor: "#4C7273",
+          color: "#fff",
+          border: "none",
+          borderRadius: "4px",
+          cursor: "pointer",
+        }}
+      >
+        Save/Discard
+      </button>
     </div>
   );
 }
