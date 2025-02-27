@@ -2,10 +2,14 @@
 body {
   font-family: Arial, sans-serif;
   margin: 0;
-  padding: 20px;
+  padding: 0; /* Remove padding to avoid extra space */
   background: linear-gradient(135deg, #041421, #1b3a4b, #2f5c72, #4C7273, #6d8fa3);
   background-size: 400% 400%;
   animation: gradientBG 10s ease infinite;
+  display: flex;
+  justify-content: center; /* Center the app horizontally */
+  align-items: flex-start; /* Align items to the top */
+  min-height: 100vh; /* Ensure the body takes the full viewport height */
 }
 
 /* Gradient Animation */
@@ -15,14 +19,23 @@ body {
   100% { background-position: 0% 50%; }
 }
 
+/* App Container */
 .app {
   max-width: 1200px;
+  width: 100%; /* Ensure the app takes full width */
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center children horizontally */
+  text-align: center; /* Center text within the app */
+  padding-top: 20px; /* Add some space at the top */
 }
 
+/* Heading (Buzz Meet) */
 h1 {
   text-align: center;
   color: #fff;
+  margin-bottom: 20px; /* Add spacing below the heading */
 }
 
 /* Controls Section */
@@ -36,6 +49,8 @@ h1 {
   padding: 15px;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  width: 100%; /* Ensure controls take full width */
+  max-width: 600px; /* Limit maximum width for better readability */
 }
 
 @media (min-width: 768px) {
@@ -60,6 +75,7 @@ h1 {
   margin-right: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  width: 100%; /* Ensure inputs take full width */
 }
 
 .controls button {
@@ -71,6 +87,7 @@ h1 {
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.3s, transform 0.2s;
+  width: 100%; /* Ensure buttons take full width */
 }
 
 .controls button:hover {
@@ -102,6 +119,8 @@ h1 {
   margin: 15px 0;
   border-radius: 0 4px 4px 0;
   transition: opacity 0.5s;
+  width: 100%; /* Ensure notification takes full width */
+  max-width: 600px; /* Limit maximum width for better readability */
 }
 
 #notification.hidden {
@@ -116,6 +135,9 @@ h1 {
 .videos-section {
   position: relative;
   margin-bottom: 20px;
+  width: 100%; /* Ensure video section takes full width */
+  display: flex;
+  justify-content: center; /* Center the video grid horizontally */
 }
 
 .grid-container {
@@ -123,6 +145,8 @@ h1 {
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 15px;
   margin-bottom: 20px;
+  width: 100%; /* Ensure grid takes full width */
+  max-width: 1200px; /* Limit maximum width for better readability */
 }
 
 /* Responsive Grid */
@@ -235,6 +259,8 @@ h1 {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  width: 100%; /* Ensure chat container takes full width */
+  max-width: 600px; /* Limit maximum width for better readability */
 }
 
 #chat-messages {

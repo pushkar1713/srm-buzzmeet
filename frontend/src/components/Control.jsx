@@ -15,71 +15,96 @@ function Controls({
   subtitlesActive,
 }) {
   return (
-    <div className="controls">
-      <div className="room-controls">
-        <label htmlFor="roomId">Room ID</label>
-        <input
-          id="roomId"
-          type="text"
-          placeholder="Enter room ID..."
-          value={roomId}
-          onChange={(e) => setRoomId(e.target.value)}
-          disabled={inRoom}
-        />
+    <div style={styles.container}>
+      <input
+        type="text"
+        placeholder="Room ID"
+        value={roomId}
+        onChange={(e) => setRoomId(e.target.value)}
+        disabled={inRoom}
+        style={styles.input}
+      />
 
-        <label htmlFor="userName">Your Name</label>
-        <input
-          id="userName"
-          type="text"
-          placeholder="Enter your name..."
-          value={userName}
-          onChange={(e) => setUserName(e.target.value)}
-          disabled={inRoom}
-        />
+      <input
+        type="text"
+        placeholder="Your Name"
+        value={userName}
+        onChange={(e) => setUserName(e.target.value)}
+        disabled={inRoom}
+        style={styles.input}
+      />
 
-        <button id="joinBtn" onClick={onJoin} disabled={inRoom}>
-          Join Room
-        </button>
+      <button onClick={onJoin} disabled={inRoom} style={styles.button}>
+      <i className="fa-solid fa-arrow-right"></i> Join
+      </button>
 
-        <button id="leaveBtn" onClick={onLeave} disabled={!inRoom}>
-          Leave Room
-        </button>
-      </div>
+      <button onClick={onLeave} disabled={!inRoom} style={styles.button}>
+      <i className="fa-solid fa-xmark"></i> Leave
+      </button>
 
-      <div className="media-controls">
-        <button
-          id="recordBtn"
-          onClick={onStartRecording}
-          disabled={!inRoom || isRecording}
-        >
-          <span className="icon">
-            <i className="fa-solid fa-microphone-lines"></i>
-          </span>
-          Record
-        </button>
+      <button
+        onClick={onStartRecording}
+        disabled={!inRoom || isRecording}
+        style={styles.button}
+      >
+        <i className="fa-solid fa-circle"></i> Rec
+      </button>
 
-        <button
-          id="stopRecordBtn"
-          onClick={onStopRecording}
-          disabled={!inRoom || !isRecording}
-        >
-          <span className="icon">⏹</span> Stop
-        </button>
+      <button
+        onClick={onStopRecording}
+        disabled={!inRoom || !isRecording}
+        style={styles.button}
+      >
+        <i className="fa-solid fa-square"></i> Stop
+      </button>
 
-        <button
-          id="startSpeechBtn"
-          onClick={onToggleSubtitles}
-          disabled={!inRoom}
-          className={subtitlesActive ? "active" : ""}
-        >
-          <span className="icon">
-            <i className="fa-solid fa-comment-dots"></i>
-          </span>
-          Subtitles {subtitlesActive ? "Off" : "On"}
-        </button>
-      </div>
+      <button
+        onClick={onToggleSubtitles}
+        disabled={!inRoom}
+        style={{
+          ...styles.button,
+          backgroundColor: subtitlesActive ? "#4C7273" : "#041421",
+        }}
+      >
+        💬 {subtitlesActive ? "Sub Off" : "Sub On"}
+      </button>
     </div>
   );
 }
+
+const styles = {
+  container: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    padding: "15px",
+    backgroundColor: "#041421",
+    borderRadius: "8px",
+    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+    maxWidth: "100%",
+    overflowX: "auto",
+  },
+  input: {
+    padding: "8px",
+    fontSize: "14px",
+    width: "120px",
+    borderRadius: "5px",
+    border: "1px solid #4C7273",
+    backgroundColor: "#041421",
+    color: "#fff",
+    outline: "none",
+    textAlign: "center",
+  },
+  button: {
+    padding: "8px 12px",
+    fontSize: "14px",
+    borderRadius: "5px",
+    color: "#fff",
+    border: "1px solid #4C7273",
+    cursor: "pointer",
+    transition: "background 0.3s ease",
+    backgroundColor: "#4C7273",
+  },
+};
 
 export default Controls;

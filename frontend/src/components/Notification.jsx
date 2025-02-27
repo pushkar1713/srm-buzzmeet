@@ -9,11 +9,19 @@ function Notification({ message, onClose }) {
       setVisible(true);
       const timer = setTimeout(() => {
         setVisible(false);
-        onClose();
+        // Check if onClose is a function before calling it
+        if (typeof onClose === "function") {
+          onClose();
+        }
       }, 5000);
       return () => clearTimeout(timer);
     }
   }, [message, onClose]);
+
+  // If there's no message, don't render the notification
+  if (!message) {
+    return null;
+  }
 
   return (
     <div className={`notification ${visible ? "visible" : "hidden"}`}>
@@ -21,5 +29,10 @@ function Notification({ message, onClose }) {
     </div>
   );
 }
+
+// Add default prop for onClose to prevent errors
+Notification.defaultProps = {
+  onClose: () => {}, // Default empty function
+};
 
 export default Notification;
