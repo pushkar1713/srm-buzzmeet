@@ -29,27 +29,34 @@ function Subtitles() {
     }
   }, [state.final, state.interim]);
 
-  // Autosave transcript to TXT file every 60 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (state.final || state.interim) {
-        const fullTranscript = state.final + state.interim;
-        const blob = new Blob([fullTranscript], { type: "text/plain" });
-        const url = URL.createObjectURL(blob);
+  // Function to handle download or discard option
+  const handleTranscriptAction = () => {
+    const userChoice = window.confirm(
+      "Do you want to download the transcript? Press OK to download or Cancel to discard."
+    );
 
-        // Create a temporary anchor element to trigger download
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `meeting_transcript_${new Date().toISOString()}.txt`; // Dynamic file name
-        a.click();
+    if (userChoice) {
+      // User chose to download the transcript
+      const fullTranscript = state.final + state.interim; // Combine final and interim transcripts
+      const blob = new Blob([fullTranscript], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
 
-        // Clean up
-        URL.revokeObjectURL(url);
-      }
-    }, 60000); // Autosave every 60 seconds
+      // Create a temporary anchor element to trigger download
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `meeting_transcript_${new Date().toISOString()}.txt`; // Dynamic file name
+      a.click();
 
-    return () => clearInterval(interval); // Cleanup interval on unmount
-  }, [state.final, state.interim]);
+      // Clean up
+      URL.revokeObjectURL(url);
+    } else {
+      // User chose to discard the transcript
+      alert("Transcript discarded. It will not be saved.");
+      localStorage.removeItem("meeting_transcript"); // Clear transcript from local storage
+      dispatch({ type: "CLEAR_INTERIM" }); // Clear interim transcript
+      dispatch({ type: "ADD_FINAL", payload: "" }); // Clear final transcript
+    }
+  };
 
   // Speech recognition setup
   useEffect(() => {
@@ -102,12 +109,32 @@ function Subtitles() {
   }, []);
 
   return (
-    <div id="subtitles-container">
-      <h2>Meeting Transcript</h2>
-      <p id="subtitles">
-        {state.final} {/* Display final transcript */}
-        <span style={{ color: "gray" }}>{state.interim}</span> {/* Display interim transcript in gray */}
-      </p>
+    <div style={{ display: "flex", justifyContent: "space-between" }}>
+      {/* Transcript Container */}
+      <div id="subtitles-container" style={{ flex: 1, marginRight: "20px" }}>
+        <h2>Meeting Transcript</h2>
+        <p id="subtitles">
+          {state.final} {/* Display final transcript */}
+          <span style={{ color: "gray" }}>{state.interim}</span> {/* Display interim transcript in gray */}
+        </p>
+      </div>
+
+      {/* Button Container */}
+      <div style={{ width: "200px", textAlign: "right" }}>
+        <button
+          onClick={handleTranscriptAction}
+          style={{
+            padding: "10px 20px",
+            backgroundColor: "#007bff",
+            color: "#fff",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer",
+          }}
+        >
+          Save or Discard Transcript
+        </button>
+      </div>
     </div>
   );
 }
