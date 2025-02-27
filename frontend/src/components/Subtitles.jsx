@@ -1,16 +1,70 @@
-import React, { useState, useEffect } from "react";
+import React, { useReducer, useEffect } from "react";
+
+// Reducer function to manage transcript state
+const transcriptReducer = (state, action) => {
+  switch (action.type) {
+    case "ADD_FINAL":
+      return { ...state, final: state.final + action.payload + "\n" }; // Add new line for paragraphs
+    case "ADD_INTERIM":
+      return { ...state, interim: action.payload };
+    case "CLEAR_INTERIM":
+      return { ...state, interim: "" };
+    default:
+      return state;
+  }
+};
 
 function Subtitles() {
-  const [transcript, setTranscript] = useState("");
+  // Use useReducer to manage transcript state
+  const [state, dispatch] = useReducer(transcriptReducer, {
+    final: "", // Stores final transcript
+    interim: "", // Stores interim transcript
+  });
 
+  // Autosave transcript to local storage whenever it changes
   useEffect(() => {
-    // Check if browser supports SpeechRecognition
+    if (state.final || state.interim) {
+      const fullTranscript = state.final + state.interim;
+      localStorage.setItem("meeting_transcript", fullTranscript);
+    }
+  }, [state.final, state.interim]);
+
+  // Function to handle download or discard option
+  const handleTranscriptAction = () => {
+    const userChoice = window.confirm(
+      "Do you want to download the transcript? Press OK to download or Cancel to discard."
+    );
+
+    if (userChoice) {
+      // User chose to download the transcript
+      const fullTranscript = state.final + state.interim; // Combine final and interim transcripts
+      const blob = new Blob([fullTranscript], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+
+      // Create a temporary anchor element to trigger download
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `meeting_transcript_${new Date().toISOString()}.txt`; // Dynamic file name
+      a.click();
+
+      // Clean up
+      URL.revokeObjectURL(url);
+    } else {
+      // User chose to discard the transcript
+      alert("Transcript discarded. It will not be saved.");
+      localStorage.removeItem("meeting_transcript"); // Clear transcript from local storage
+      dispatch({ type: "CLEAR_INTERIM" }); // Clear interim transcript
+      dispatch({ type: "ADD_FINAL", payload: "" }); // Clear final transcript
+    }
+  };
+
+  // Speech recognition setup
+  useEffect(() => {
     if (!("webkitSpeechRecognition" in window)) {
       console.log("Speech recognition not supported");
       return;
     }
 
-    // Setup speech recognition
     const SpeechRecognition = window.webkitSpeechRecognition;
     const recognitionInstance = new SpeechRecognition();
 
@@ -19,40 +73,68 @@ function Subtitles() {
     recognitionInstance.lang = "en-US";
 
     recognitionInstance.onresult = (event) => {
-      let interimTranscript = "";
-      let finalTranscript = "";
+      let newInterimTranscript = "";
+      let newFinalTranscript = "";
 
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const transcript = event.results[i][0].transcript;
         if (event.results[i].isFinal) {
-          finalTranscript += transcript + " ";
+          newFinalTranscript += transcript + " "; // Add space for better readability
         } else {
-          interimTranscript += transcript;
+          newInterimTranscript += transcript;
         }
       }
 
-      setTranscript(finalTranscript || interimTranscript);
+      // Dispatch actions to update state
+      if (newFinalTranscript) {
+        dispatch({ type: "ADD_FINAL", payload: newFinalTranscript });
+      }
+      if (newInterimTranscript) {
+        dispatch({ type: "ADD_INTERIM", payload: newInterimTranscript });
+      } else {
+        dispatch({ type: "CLEAR_INTERIM" });
+      }
     };
 
     recognitionInstance.onerror = (event) => {
       console.error("Speech recognition error", event.error);
-      if (event.error === "no-speech") {
-        console.log("No speech detected");
-      } else if (event.error === "audio-capture") {
-        console.log("No microphone available");
-      }
     };
 
     recognitionInstance.start();
 
+    // Cleanup function
     return () => {
       recognitionInstance.stop();
     };
   }, []);
 
   return (
-    <div id="subtitles-container">
-      <p id="subtitles">{transcript}</p>
+    <div style={{ display: "flex", justifyContent: "space-between" }}>
+      {/* Transcript Container */}
+      <div id="subtitles-container" style={{ flex: 1, marginRight: "20px" }}>
+        <h2>Meeting Transcript</h2>
+        <p id="subtitles">
+          {state.final} {/* Display final transcript */}
+          <span style={{ color: "gray" }}>{state.interim}</span> {/* Display interim transcript in gray */}
+        </p>
+      </div>
+
+      {/* Button Container */}
+      <div style={{ width: "200px", textAlign: "right" }}>
+        <button
+          onClick={handleTranscriptAction}
+          style={{
+            padding: "10px 20px",
+            backgroundColor: "#007bff",
+            color: "#fff",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer",
+          }}
+        >
+          Save or Discard Transcript
+        </button>
+      </div>
     </div>
   );
 }
