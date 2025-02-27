@@ -6,6 +6,7 @@ import LocalVideo from "../src/components/LocalVideo";
 import Notification from "../src/components/Notification";
 import VideoGrid from "../src/components/VideoGrid";
 import Subtitles from "../src/components/Subtitles";
+import WhiteboardContainer from "../src/components/WhiteboardContainer"; // Import the WhiteboardContainer
 import "./App.css";
 import { io } from "socket.io-client";
 
@@ -20,6 +21,7 @@ function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [subtitlesActive, setSubtitlesActive] = useState(false);
+  const [showWhiteboard, setShowWhiteboard] = useState(false); // State for whiteboard visibility
 
   // Initialize WebRTC service
   useEffect(() => {
@@ -176,6 +178,11 @@ function App() {
     setNotification(subtitlesActive ? "Subtitles Off" : "Subtitles On");
   };
 
+  const toggleWhiteboard = () => {
+    setShowWhiteboard(!showWhiteboard);
+    setNotification(showWhiteboard ? "Whiteboard Hidden" : "Whiteboard Shown");
+  };
+
   return (
     <div className="app">
       <h1>
@@ -183,30 +190,45 @@ function App() {
       </h1>
 
       <Controls
-        roomId={roomId}
-        setRoomId={setRoomId}
-        userName={userName}
-        setUserName={setUserName}
-        onJoin={handleJoinRoom}
-        onLeave={handleLeaveRoom}
-        onStartRecording={handleStartRecording}
-        onStopRecording={handleStopRecording}
-        isRecording={isRecording}
-        inRoom={inRoom}
-        onToggleSubtitles={toggleSubtitles}
-        subtitlesActive={subtitlesActive}
-      />
-
+  roomId={roomId}
+  setRoomId={setRoomId}
+  userName={userName}
+  setUserName={setUserName}
+  onJoin={handleJoinRoom}
+  onLeave={handleLeaveRoom}
+  onStartRecording={handleStartRecording}
+  onStopRecording={handleStopRecording}
+  isRecording={isRecording}
+  inRoom={inRoom}
+  onToggleSubtitles={toggleSubtitles}
+  subtitlesActive={subtitlesActive}
+  onToggleWhiteboard={toggleWhiteboard} // Pass the toggle function
+  showWhiteboard={showWhiteboard} // Pass the whiteboard visibility state
+/>
       <Notification message={notification} />
 
-      <div className="videos-section">
-        <VideoGrid
-          remoteStreams={remoteStreams}
-          isAdmin={isAdmin}
-          onKickUser={handleKickUser}
-        />
+      <div className="videos-section" style={{ display: 'flex', height: 'calc(100vh - 150px)' }}>
+        <div className="video-container" style={{ 
+          flex: showWhiteboard ? '1' : '1',
+          transition: 'flex 0.3s ease'
+        }}>
+          <VideoGrid
+            remoteStreams={remoteStreams}
+            isAdmin={isAdmin}
+            onKickUser={handleKickUser}
+          />
 
-        {localStream && <LocalVideo stream={localStream} webrtc={webrtc} />}
+          {localStream && <LocalVideo stream={localStream} webrtc={webrtc} />}
+        </div>
+
+        {showWhiteboard && (
+          <div className="whiteboard-area" style={{ flex: '1', padding: '10px' }}>
+            <WhiteboardContainer 
+              webRTCService={webrtc} 
+              isActive={showWhiteboard} 
+            />
+          </div>
+        )}
       </div>
 
       {inRoom && <Chat webrtc={webrtc} />}

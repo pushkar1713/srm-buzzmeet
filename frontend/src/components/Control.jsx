@@ -13,6 +13,8 @@ function Controls({
   inRoom,
   onToggleSubtitles,
   subtitlesActive,
+  onToggleWhiteboard, // Add this prop
+  showWhiteboard, // Add this prop
 }) {
   return (
     <div style={styles.container}>
@@ -35,11 +37,11 @@ function Controls({
       />
 
       <button onClick={onJoin} disabled={inRoom} style={styles.button}>
-      <i className="fa-solid fa-arrow-right"></i> Join
+        <i className="fa-solid fa-arrow-right"></i> Join
       </button>
 
       <button onClick={onLeave} disabled={!inRoom} style={styles.button}>
-      <i className="fa-solid fa-xmark"></i> Leave
+        <i className="fa-solid fa-xmark"></i> Leave
       </button>
 
       <button
@@ -67,6 +69,18 @@ function Controls({
         }}
       >
         💬 {subtitlesActive ? "Sub Off" : "Sub On"}
+      </button>
+
+      {/* Add the Whiteboard Toggle Button */}
+      <button
+        onClick={onToggleWhiteboard}
+        disabled={!inRoom}
+        style={{
+          ...styles.button,
+          backgroundColor: showWhiteboard ? "#4C7273" : "#041421",
+        }}
+      >
+        🎨 {showWhiteboard ? "Hide Whiteboard" : "Show Whiteboard"}
       </button>
     </div>
   );
