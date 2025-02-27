@@ -10,7 +10,7 @@ import "./App.css";
 import { io } from "socket.io-client";
 
 function App() {
-  const [notification, setNotification] = useState("");
+  const [notification, setNotification] = useState({ message: "", type: "info" });
   const [webrtc, setWebrtc] = useState(null);
   const [roomId, setRoomId] = useState("");
   const [userName, setUserName] = useState("");
@@ -21,7 +21,6 @@ function App() {
   const [isRecording, setIsRecording] = useState(false);
   const [subtitlesActive, setSubtitlesActive] = useState(false);
 
-  // Initialize WebRTC service
   useEffect(() => {
     const pcConfig = {
       iceServers: [
@@ -34,55 +33,36 @@ function App() {
             "stun:stun4.l.google.com:19302",
           ],
         },
-        {
-          urls: "turn:numb.viagenie.ca",
-          credential: "muazkh",
-          username: "webrtc@live.com",
-        },
-        {
-          urls: "turn:192.158.29.39:3478?transport=udp",
-          credential: "JZEOEt2V3Qb0y27GRntt2u2PAYA=",
-          username: "28224511:1379330808",
-        },
       ],
     };
 
-    // Create WebRTC service instance
-    const webrtcService = new WebRTCService(pcConfig, {
-      log: true,
-      warn: true,
-      error: true,
-    });
+    const webrtcService = new WebRTCService(pcConfig);
     webrtcService.init();
     setWebrtc(webrtcService);
 
-    // Get local media stream
     webrtcService
       .getLocalStream(true, { width: 640, height: 480 })
-      .then((stream) => {
-        setLocalStream(stream);
-      });
+      .then((stream) => setLocalStream(stream));
 
-    // Set up event listeners
     webrtcService.addEventListener("notification", (e) => {
-      setNotification(e.detail.notification);
+      setNotification({ message: e.detail.notification, type: "info" });
     });
 
     webrtcService.addEventListener("createdRoom", (e) => {
-      setNotification(`Room ${e.detail.roomId} was created`);
+      setNotification({ message: `Room ${e.detail.roomId} was created`, type: "success" });
       setInRoom(true);
       setIsAdmin(true);
       webrtcService.gotStream();
     });
 
     webrtcService.addEventListener("joinedRoom", (e) => {
-      setNotification(`Room ${e.detail.roomId} was joined`);
+      setNotification({ message: `Room ${e.detail.roomId} was joined`, type: "success" });
       setInRoom(true);
       webrtcService.gotStream();
     });
 
     webrtcService.addEventListener("leftRoom", (e) => {
-      setNotification(`Left the room ${e.detail.roomId}`);
+      setNotification({ message: `Left the room ${e.detail.roomId}`, type: "warning" });
       setInRoom(false);
       setIsAdmin(false);
       setRemoteStreams({});
@@ -99,12 +79,6 @@ function App() {
     });
 
     webrtcService.addEventListener("removeUser", (e) => {
-      if (!e.detail.socketId) {
-        // Remove all remote streams
-        setRemoteStreams({});
-        return;
-      }
-
       setRemoteStreams((prev) => {
         const newStreams = { ...prev };
         delete newStreams[e.detail.socketId];
@@ -113,16 +87,15 @@ function App() {
     });
 
     webrtcService.addEventListener("kicked", () => {
-      setNotification("You were kicked out");
+      setNotification({ message: "You were kicked out", type: "error" });
       setInRoom(false);
       setRemoteStreams({});
     });
 
     webrtcService.addEventListener("error", (e) => {
-      setNotification(e.detail.error.message);
+      setNotification({ message: e.detail.error.message, type: "error" });
     });
 
-    // Clean up event listeners on component unmount
     return () => {
       if (webrtcService) {
         webrtcService.removeEventListener("notification");
@@ -139,15 +112,13 @@ function App() {
 
   const handleJoinRoom = () => {
     if (!roomId) {
-      setNotification("Room ID not provided");
+      setNotification({ message: "Room ID not provided", type: "warning" });
       return;
     }
-
     if (!userName) {
-      setNotification("Please enter your name");
+      setNotification({ message: "Please enter your name", type: "warning" });
       return;
     }
-
     webrtc.joinRoom(roomId, userName);
   };
 
@@ -158,13 +129,13 @@ function App() {
   const handleStartRecording = () => {
     webrtc.startRecording();
     setIsRecording(true);
-    setNotification("Recording started...");
+    setNotification({ message: "Recording started...", type: "success" });
   };
 
   const handleStopRecording = () => {
     webrtc.stopRecording();
     setIsRecording(false);
-    setNotification("Recording stopped");
+    setNotification({ message: "Recording stopped", type: "info" });
   };
 
   const handleKickUser = (socketId) => {
@@ -173,7 +144,10 @@ function App() {
 
   const toggleSubtitles = () => {
     setSubtitlesActive(!subtitlesActive);
-    setNotification(subtitlesActive ? "Subtitles Off" : "Subtitles On");
+    setNotification({
+      message: subtitlesActive ? "Subtitles Off" : "Subtitles On",
+      type: "info",
+    });
   };
 
   return (
@@ -197,20 +171,14 @@ function App() {
         subtitlesActive={subtitlesActive}
       />
 
-      <Notification message={notification} />
+      <Notification message={notification.message} type={notification.type} />
 
       <div className="videos-section">
-        <VideoGrid
-          remoteStreams={remoteStreams}
-          isAdmin={isAdmin}
-          onKickUser={handleKickUser}
-        />
-
+        <VideoGrid remoteStreams={remoteStreams} isAdmin={isAdmin} onKickUser={handleKickUser} />
         {localStream && <LocalVideo stream={localStream} webrtc={webrtc} />}
       </div>
 
       {inRoom && <Chat webrtc={webrtc} />}
-
       {subtitlesActive && <Subtitles localStream={localStream} />}
     </div>
   );
