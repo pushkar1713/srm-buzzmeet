@@ -1,0 +1,57 @@
+/* Video Grid Container */
+#videoGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    padding: 15px;
+    background-color: #041421;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Grid Item */
+  .grid-item {
+    position: relative;
+    background-color: #4C7273;
+    border-radius: 15px;
+    overflow: hidden;
+    text-align: center;
+  }
+  
+  /* Video Element */
+  video {
+    width: 100%;
+    height: auto;
+    border-radius: 15px;
+  }
+  
+  /* User Name */
+  .grid-item p {
+    margin: 10px;
+    color: #fff;
+    font-size: 14px;
+  }
+  
+  /* Kick Button */
+  .kick_btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 5px 10px;
+    background-color: #ff6b6b;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .kick_btn:hover {
+    background-color: #ff4c4c;
+    transform: scale(1.05);
+  }
+  
+  .kick_btn:active {
+    transform: scale(0.95);
+  }

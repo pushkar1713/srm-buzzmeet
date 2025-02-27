@@ -11,21 +11,21 @@ function LocalVideo({ stream, webrtc }) {
   const [position, setPosition] = useState({ x: 20, y: 20 });
   const [offset, setOffset] = useState({ x: 0, y: 0 });
 
-  // Set the stream to the video element when it changes
+  // Set the stream to the video element
   useEffect(() => {
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream;
     }
   }, [stream]);
 
-  // Add mouse event listeners for dragging
+  // Dragging functionality
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (isDragging && containerRef.current) {
-        const x = e.clientX - offset.x;
-        const y = e.clientY - offset.y;
+        const x = e.pageX - offset.x;
+        const y = e.pageY - offset.y;
 
-        // Ensure the window stays within the viewport
+        // Ensure the window stays within bounds
         const maxX = window.innerWidth - containerRef.current.offsetWidth;
         const maxY = window.innerHeight - containerRef.current.offsetHeight;
 
@@ -38,6 +38,7 @@ function LocalVideo({ stream, webrtc }) {
 
     const handleMouseUp = () => {
       setIsDragging(false);
+      document.body.style.userSelect = "auto"; // Restore text selection
     };
 
     document.addEventListener("mousemove", handleMouseMove);
@@ -53,9 +54,11 @@ function LocalVideo({ stream, webrtc }) {
     if (containerRef.current) {
       setIsDragging(true);
       setOffset({
-        x: e.clientX - containerRef.current.getBoundingClientRect().left,
-        y: e.clientY - containerRef.current.getBoundingClientRect().top,
+        x: e.pageX - containerRef.current.getBoundingClientRect().left,
+        y: e.pageY - containerRef.current.getBoundingClientRect().top,
       });
+
+      document.body.style.userSelect = "none"; // Prevent text selection
     }
   };
 
@@ -84,24 +87,17 @@ function LocalVideo({ stream, webrtc }) {
   const toggleScreenShare = async () => {
     try {
       if (!isScreenSharing) {
-        // Start screen sharing
         const newScreenStream = await navigator.mediaDevices.getDisplayMedia({
-          video: {
-            cursor: "always",
-            displaySurface: "window",
-          },
+          video: { cursor: "always", displaySurface: "window" },
           audio: false,
         });
 
-        // Set the screen share as the video source
         if (videoRef.current) {
           videoRef.current.srcObject = newScreenStream;
         }
 
-        // Update WebRTC with screen stream
         webrtc.replaceVideoTrack(newScreenStream.getVideoTracks()[0]);
 
-        // Handle when user stops sharing via browser UI
         newScreenStream.getVideoTracks()[0].addEventListener("ended", () => {
           stopScreenShare();
         });
@@ -121,12 +117,10 @@ function LocalVideo({ stream, webrtc }) {
       screenStream.getTracks().forEach((track) => track.stop());
     }
 
-    // Restore camera stream
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream;
     }
 
-    // Restore original video track
     if (stream && stream.getVideoTracks()[0]) {
       webrtc.replaceVideoTrack(stream.getVideoTracks()[0]);
     }
@@ -137,51 +131,83 @@ function LocalVideo({ stream, webrtc }) {
 
   return (
     <div
-      id="localVideo-container"
       ref={containerRef}
       style={{
         position: "absolute",
         left: `${position.x}px`,
         top: `${position.y}px`,
         cursor: isDragging ? "grabbing" : "grab",
+        backgroundColor: "#222",
+        padding: "10px",
+        borderRadius: "10px",
+        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
       }}
       onMouseDown={handleMouseDown}
     >
-      <video ref={videoRef} autoPlay playsInline muted />
-      <div className="local-controls">
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted
+        style={{
+          width: "200px",
+          height: "150px",
+          borderRadius: "8px",
+          backgroundColor: "black",
+        }}
+      />
+      <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
         <button
-          className={`control-btn ${isAudioMuted ? "muted" : ""}`}
+          style={{
+            backgroundColor: isAudioMuted ? "#ff4d4d" : "#4CAF50",
+            color: "white",
+            border: "none",
+            padding: "8px 12px",
+            borderRadius: "5px",
+            cursor: "pointer",
+          }}
           onClick={toggleMute}
         >
-          <span className="icon">
-            <i
-              className={`fa-solid ${
-                isAudioMuted ? "fa-microphone-slash" : "fa-microphone-lines"
-              }`}
-            ></i>
-          </span>
+          <i
+            className={`fa-solid ${
+              isAudioMuted ? "fa-microphone-slash" : "fa-microphone-lines"
+            }`}
+          ></i>
         </button>
 
         <button
-          className={`control-btn ${isVideoOff ? "muted" : ""}`}
+          style={{
+            backgroundColor: isVideoOff ? "#ff4d4d" : "#4CAF50",
+            color: "white",
+            border: "none",
+            padding: "8px 12px",
+            borderRadius: "5px",
+            cursor: "pointer",
+          }}
           onClick={toggleVideo}
         >
-          <span className="icon">
-            <i
-              className={`fa-solid ${
-                isVideoOff ? "fa-video-slash" : "fa-video"
-              }`}
-            ></i>
-          </span>
+          <i
+            className={`fa-solid ${
+              isVideoOff ? "fa-video-slash" : "fa-video"
+            }`}
+          ></i>
         </button>
 
         <button
-          className={`control-btn ${isScreenSharing ? "active" : ""}`}
+          style={{
+            backgroundColor: isScreenSharing ? "#ffa500" : "#4CAF50",
+            color: "white",
+            border: "none",
+            padding: "8px 12px",
+            borderRadius: "5px",
+            cursor: "pointer",
+          }}
           onClick={toggleScreenShare}
         >
-          <span className="icon">
-            <i className="fa-solid fa-desktop"></i>
-          </span>
+          <i className="fa-solid fa-desktop"></i>
         </button>
       </div>
     </div>

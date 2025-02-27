@@ -1,0 +1,59 @@
+/* Local Video Container */
+#localVideo-container {
+    position: absolute;
+    background-color: #041421;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    z-index: 1000;
+  }
+  
+  /* Video Element */
+  video {
+    width: 200px;
+    height: auto;
+    border-radius: 15px 15px 0 0;
+  }
+  
+  /* Local Controls */
+  .local-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px;
+    background-color: #4C7273;
+  }
+  
+  /* Control Buttons */
+  .control-btn {
+    padding: 8px;
+    border: none;
+    border-radius: 8px;
+    background-color: #041421;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .control-btn:hover {
+    background-color: #5a8a8b;
+    transform: scale(1.05);
+  }
+  
+  .control-btn:active {
+    transform: scale(0.95);
+  }
+  
+  .control-btn.muted {
+    background-color: #ff6b6b;
+  }
+  
+  .control-btn.active {
+    background-color: #ffd700;
+    color: #041421;
+  }
+  
+  /* Icons */
+  .icon {
+    font-size: 14px;
+  }

@@ -1,0 +1,125 @@
+/* Controls Container */
+.controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px;
+    background-color: #041421;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    font-family: 'Arial', sans-serif;
+    color: #fff;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  /* Room Controls and Media Controls Sections */
+  .room-controls,
+  .media-controls {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  
+  /* Labels */
+  label {
+    font-weight: bold;
+    color: #ffd700;
+    margin-right: 5px;
+  }
+  
+  /* Input Fields */
+  input {
+    padding: 8px;
+    border: none;
+    border-radius: 8px;
+    background-color: #4C7273;
+    color: #fff;
+    font-size: 14px;
+    outline: none;
+    transition: background-color 0.3s ease;
+    width: 120px;
+  }
+  
+  input::placeholder {
+    color: #a0a0a0;
+  }
+  
+  input:focus {
+    background-color: #5a8a8b;
+  }
+  
+  input:disabled {
+    background-color: #2c4a4a;
+    cursor: not-allowed;
+  }
+  
+  /* Buttons */
+  button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 8px;
+    background-color: #4C7273;
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  
+  button:hover:not(:disabled) {
+    background-color: #5a8a8b;
+    transform: scale(1.05);
+  }
+  
+  button:active:not(:disabled) {
+    transform: scale(0.95);
+  }
+  
+  button:disabled {
+    background-color: #2c4a4a;
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+  
+  /* Active State for Subtitles Button */
+  button.active {
+    background-color: #ffd700;
+    color: #041421;
+  }
+  
+  /* Icons */
+  .icon {
+    font-size: 14px;
+  }
+  
+  /* Specific Button Styles */
+  #joinBtn {
+    background-color: #4C7273;
+  }
+  
+  #leaveBtn {
+    background-color: #ff6b6b;
+  }
+  
+  #recordBtn {
+    background-color: #4C7273;
+  }
+  
+  #stopRecordBtn {
+    background-color: #ff6b6b;
+  }
+  
+  #startSpeechBtn {
+    background-color: #4C7273;
+  }
+  
+  #startSpeechBtn.active {
+    background-color: #ffd700;
+    color: #041421;
+  }

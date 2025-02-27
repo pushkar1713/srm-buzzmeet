@@ -1,5 +1,5 @@
 import React from "react";
-
+import "./VideoGrid.css"
 function VideoGrid({ remoteStreams, isAdmin, onKickUser }) {
   return (
     <div id="videoGrid" className="grid-container">

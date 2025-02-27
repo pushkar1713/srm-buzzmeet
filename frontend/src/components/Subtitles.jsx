@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-
+import "./Subtitles.css"
 function Subtitles({ localStream }) {
   const [transcript, setTranscript] = useState("");
   const [recognition, setRecognition] = useState(null);

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import "./Chat.css";
 
 function Chat({ webrtc }) {
   const [message, setMessage] = useState("");
@@ -10,7 +11,7 @@ function Chat({ webrtc }) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages]);
 
-  // Set up event listener for incoming chat messages
+  // Set up event listener for incoming chat messagesa
   useEffect(() => {
     const handleChatMessage = (e) => {
       setChatMessages((prev) => [
