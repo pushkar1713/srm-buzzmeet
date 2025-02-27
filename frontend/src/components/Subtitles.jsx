@@ -233,13 +233,33 @@ ${truncatedText}`
   }, []);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+    <div style={{ 
+      display: "flex", 
+      flexDirection: "column", 
+      gap: "20px", 
+      fontFamily: "'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif", 
+      color: "#041421" 
+    }}>
       {/* Transcript Container */}
       <div style={{ display: "flex", gap: "20px", alignItems: "flex-start" }}>
-        <div style={{ flex: 1, maxHeight: "200px", overflowY: "auto", border: "1px solid #ddd", padding: "10px" }}>
-          <p style={{ margin: 0 }}>
+        <div style={{ 
+          flex: 1, 
+          maxHeight: "200px", 
+          overflowY: "auto", 
+          border: "1px solid #e0e5e6", 
+          borderRadius: "6px", 
+          padding: "12px", 
+          backgroundColor: "#f8f9fa", 
+          boxShadow: "0 1px 3px rgba(4, 20, 33, 0.08)" 
+        }}>
+          <p style={{ 
+            margin: 0, 
+            fontSize: "15px", 
+            lineHeight: "1.5", 
+            letterSpacing: "0.01em" 
+          }}>
             {state.final}
-            <span style={{ color: "#888" }}>{state.interim}</span>
+            <span style={{ color: "#6c757d", fontStyle: "italic" }}>{state.interim}</span>
           </p>
         </div>
 
@@ -247,12 +267,20 @@ ${truncatedText}`
         <button
           onClick={handleTranscriptAction}
           style={{
-            padding: "8px 16px",
+            padding: "10px 16px",
             backgroundColor: "#4C7273",
             color: "#fff",
             border: "none",
-            borderRadius: "4px",
+            borderRadius: "6px",
             cursor: "pointer",
+            fontWeight: "500",
+            fontSize: "14px",
+            letterSpacing: "0.3px",
+            transition: "background-color 0.2s ease",
+            boxShadow: "0 2px 4px rgba(76, 114, 115, 0.2)",
+            "&:hover": {
+              backgroundColor: "#3a5a5b"
+            }
           }}
         >
           Save/Discard
@@ -260,8 +288,8 @@ ${truncatedText}`
       </div>
       
       {/* Summary Section */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
           <input
             type="file"
             accept=".txt"
@@ -272,19 +300,32 @@ ${truncatedText}`
           <label
             htmlFor="file-upload"
             style={{
-              padding: "8px 16px",
+              padding: "10px 16px",
               backgroundColor: "#4C7273",
               color: "#fff",
               border: "none",
-              borderRadius: "4px",
+              borderRadius: "6px",
               cursor: "pointer",
+              fontWeight: "500",
+              fontSize: "14px",
+              letterSpacing: "0.3px",
+              transition: "background-color 0.2s ease",
+              boxShadow: "0 2px 4px rgba(76, 114, 115, 0.2)",
+              "&:hover": {
+                backgroundColor: "#3a5a5b"
+              }
             }}
           >
             Upload Text File
           </label>
           
           {fileName && (
-            <span style={{ marginLeft: "10px" }}>
+            <span style={{ 
+              marginLeft: "10px", 
+              fontSize: "14px", 
+              color: "#555", 
+              fontStyle: "italic" 
+            }}>
               {isLoading ? "Generating summary..." : `File: ${fileName}`}
             </span>
           )}
@@ -293,13 +334,21 @@ ${truncatedText}`
             <button
               onClick={downloadSummary}
               style={{
-                padding: "8px 16px",
+                padding: "10px 16px",
                 backgroundColor: "#4C7273",
                 color: "#fff",
                 border: "none",
-                borderRadius: "4px",
+                borderRadius: "6px",
                 cursor: "pointer",
                 marginLeft: "auto",
+                fontWeight: "500",
+                fontSize: "14px",
+                letterSpacing: "0.3px",
+                transition: "background-color 0.2s ease",
+                boxShadow: "0 2px 4px rgba(76, 114, 115, 0.2)",
+                "&:hover": {
+                  backgroundColor: "#3a5a5b"
+                }
               }}
             >
               Download Summary
@@ -309,9 +358,34 @@ ${truncatedText}`
         
         {/* Summary Display */}
         {state.summary && (
-          <div style={{ border: "1px solid #ddd", padding: "10px", maxHeight: "200px", overflowY: "auto" }}>
-            <h3 style={{ margin: "0 0 10px 0" }}>Text Summary</h3>
-            <pre style={{ margin: 0, whiteSpace: "pre-wrap", fontFamily: "inherit" }}>
+          <div style={{ 
+            border: "1px solid #e0e5e6", 
+            borderRadius: "6px", 
+            padding: "16px", 
+            maxHeight: "200px", 
+            overflowY: "auto",
+            backgroundColor: "#f8f9fa",
+            boxShadow: "0 1px 3px rgba(4, 20, 33, 0.08)"
+          }}>
+            <h3 style={{ 
+              margin: "0 0 12px 0", 
+              fontSize: "17px", 
+              fontWeight: "600",
+              color: "#4C7273",
+              borderBottom: "1px solid #e0e5e6",
+              paddingBottom: "8px",
+              letterSpacing: "0.02em"
+            }}>
+              Text Summary
+            </h3>
+            <pre style={{ 
+              margin: 0, 
+              whiteSpace: "pre-wrap", 
+              fontFamily: "inherit",
+              fontSize: "15px",
+              lineHeight: "1.5",
+              letterSpacing: "0.01em"
+            }}>
               {state.summary}
             </pre>
           </div>
