@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
 
-function Subtitles({ localStream }) {
+function Subtitles() {
   const [transcript, setTranscript] = useState("");
-  const [recognition, setRecognition] = useState(null);
 
   useEffect(() => {
     // Check if browser supports SpeechRecognition
-    if (!localStream || !("webkitSpeechRecognition" in window)) {
+    if (!("webkitSpeechRecognition" in window)) {
       console.log("Speech recognition not supported");
       return;
     }
@@ -26,35 +25,30 @@ function Subtitles({ localStream }) {
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const transcript = event.results[i][0].transcript;
         if (event.results[i].isFinal) {
-          finalTranscript += transcript;
+          finalTranscript += transcript + " ";
         } else {
           interimTranscript += transcript;
         }
       }
 
       setTranscript(finalTranscript || interimTranscript);
-
-      // Clear transcript after a few seconds if it's final
-      if (finalTranscript) {
-        setTimeout(() => {
-          setTranscript("");
-        }, 5000);
-      }
     };
 
     recognitionInstance.onerror = (event) => {
       console.error("Speech recognition error", event.error);
+      if (event.error === "no-speech") {
+        console.log("No speech detected");
+      } else if (event.error === "audio-capture") {
+        console.log("No microphone available");
+      }
     };
 
     recognitionInstance.start();
-    setRecognition(recognitionInstance);
 
     return () => {
-      if (recognitionInstance) {
-        recognitionInstance.stop();
-      }
+      recognitionInstance.stop();
     };
-  }, [localStream]);
+  }, []);
 
   return (
     <div id="subtitles-container">
