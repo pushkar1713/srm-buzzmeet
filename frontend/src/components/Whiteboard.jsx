@@ -1,211 +1,263 @@
-import React, { useEffect, useRef, useState } from 'react';
 
-const Whiteboard = ({ webRTCService, whiteboardService }) => {
+import React, { useEffect, useRef, useState } from "react";
+
+const Whiteboard = ({ webrtc, isVisible }) => {
   const canvasRef = useRef(null);
-  const [color, setColor] = useState('#000000');
-  const [size, setSize] = useState(5);
-  const [tool, setTool] = useState('pen');
   const [isDrawing, setIsDrawing] = useState(false);
-  
-  // Setup the canvas and initialize the whiteboard
+  const [color, setColor] = useState("#000000");
+  const [brushSize, setBrushSize] = useState(3);
+  const [tool, setTool] = useState("pen"); // 'pen' or 'eraser'
+
   useEffect(() => {
-    if (!canvasRef.current || !whiteboardService) return;
-    
+    if (!canvasRef.current || !webrtc) return;
+
     const canvas = canvasRef.current;
-    const context = canvas.getContext('2d');
-    
-    // Set the canvas dimensions to match its display size
+    const ctx = canvas.getContext("2d");
+
+    // Set canvas size to container size
     const resizeCanvas = () => {
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width;
-      canvas.height = rect.height;
+      const container = canvas.parentElement;
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientHeight;
       
-      // Restore any saved canvas state after resize
-      if (whiteboardService.getCanvasState) {
-        whiteboardService.getCanvasState();
+      // Redraw any existing content after resize
+      const existingImage = localStorage.getItem("whiteboardData");
+      if (existingImage) {
+        const img = new Image();
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0);
+        };
+        img.src = existingImage;
       }
     };
-    
-    // Initialize canvas size
+
     resizeCanvas();
-    
-    // Add window resize listener
-    window.addEventListener('resize', resizeCanvas);
-    
-    // Initialize the whiteboard service with the canvas
-    whiteboardService.init(canvas, context);
-    
-    // Setup event handlers for drawing
-    const handleMouseDown = (e) => {
-      setIsDrawing(true);
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      whiteboardService.startDrawing(x, y);
+    window.addEventListener("resize", resizeCanvas);
+
+    // Handle incoming whiteboard data from other users
+    const handleWhiteboardData = (e) => {
+      if (!e.detail || !e.detail.data) return;
+      
+      const img = new Image();
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0);
+      };
+      img.src = e.detail.data;
+      
+      // Save to local storage
+      localStorage.setItem("whiteboardData", e.detail.data);
     };
-    
-    const handleMouseMove = (e) => {
-      if (!isDrawing) return;
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      whiteboardService.draw(x, y);
-    };
-    
-    const handleMouseUp = () => {
-      if (isDrawing) {
-        whiteboardService.endDrawing();
-        setIsDrawing(false);
-      }
-    };
-    
-    // Add touch support
-    const handleTouchStart = (e) => {
-      e.preventDefault();
-      const touch = e.touches[0];
-      const rect = canvas.getBoundingClientRect();
-      const x = touch.clientX - rect.left;
-      const y = touch.clientY - rect.top;
-      setIsDrawing(true);
-      whiteboardService.startDrawing(x, y);
-    };
-    
-    const handleTouchMove = (e) => {
-      if (!isDrawing) return;
-      e.preventDefault();
-      const touch = e.touches[0];
-      const rect = canvas.getBoundingClientRect();
-      const x = touch.clientX - rect.left;
-      const y = touch.clientY - rect.top;
-      whiteboardService.draw(x, y);
-    };
-    
-    const handleTouchEnd = (e) => {
-      e.preventDefault();
-      whiteboardService.endDrawing();
-      setIsDrawing(false);
-    };
-    
-    // Attach event listeners
-    canvas.addEventListener('mousedown', handleMouseDown);
-    canvas.addEventListener('mousemove', handleMouseMove);
-    canvas.addEventListener('mouseup', handleMouseUp);
-    canvas.addEventListener('mouseleave', handleMouseUp);
-    canvas.addEventListener('touchstart', handleTouchStart);
-    canvas.addEventListener('touchmove', handleTouchMove);
-    canvas.addEventListener('touchend', handleTouchEnd);
-    
-    // When joining a room, request the current whiteboard state
-    const handleJoin = () => {
-      setTimeout(() => {
-        whiteboardService.requestSync();
-      }, 1000); // Give some time for connections to establish
-    };
-    
-    if (webRTCService) {
-      webRTCService.addEventListener('joinedRoom', handleJoin);
-    }
-    
+
+    webrtc.addEventListener("whiteboardData", handleWhiteboardData);
+
     return () => {
-      // Cleanup all event listeners
-      canvas.removeEventListener('mousedown', handleMouseDown);
-      canvas.removeEventListener('mousemove', handleMouseMove);
-      canvas.removeEventListener('mouseup', handleMouseUp);
-      canvas.removeEventListener('mouseleave', handleMouseUp);
-      canvas.removeEventListener('touchstart', handleTouchStart);
-      canvas.removeEventListener('touchmove', handleTouchMove);
-      canvas.removeEventListener('touchend', handleTouchEnd);
-      window.removeEventListener('resize', resizeCanvas);
-      
-      if (webRTCService) {
-        webRTCService.removeEventListener('joinedRoom', handleJoin);
-      }
-      
-      // Destroy the whiteboard service
-      whiteboardService.destroy();
+      window.removeEventListener("resize", resizeCanvas);
+      webrtc.removeEventListener("whiteboardData", handleWhiteboardData);
     };
-  }, [whiteboardService, webRTCService]);
-  
-  // Update whiteboard settings when changed
-  useEffect(() => {
-    if (whiteboardService) {
-      whiteboardService.setColor(color);
+  }, [webrtc]);
+
+  // Drawing functions
+  const startDrawing = (e) => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    setIsDrawing(true);
+
+    // Set drawing style
+    ctx.strokeStyle = tool === "eraser" ? "#ffffff" : color;
+    ctx.lineWidth = tool === "eraser" ? brushSize * 3 : brushSize;
+    ctx.lineCap = "round";
+  };
+
+  const draw = (e) => {
+    if (!isDrawing) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    ctx.lineTo(x, y);
+    ctx.stroke();
+  };
+
+  const stopDrawing = () => {
+    const canvas = canvasRef.current;
+    canvas.getContext("2d").closePath();
+    setIsDrawing(false);
+
+    // Send whiteboard data to other users
+    if (webrtc) {
+      const imageData = canvas.toDataURL("image/png");
+      webrtc._sendMessage(
+        { type: "whiteboard", data: imageData },
+        null,
+        webrtc.roomId
+      );
+      
+      // Save locally
+      localStorage.setItem("whiteboardData", imageData);
     }
-  }, [color, whiteboardService]);
-  
-  useEffect(() => {
-    if (whiteboardService) {
-      whiteboardService.setSize(size);
+  };
+
+  const clearWhiteboard = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Send cleared whiteboard to other users
+    if (webrtc) {
+      const imageData = canvas.toDataURL("image/png");
+      webrtc._sendMessage(
+        { type: "whiteboard", data: imageData },
+        null,
+        webrtc.roomId
+      );
+      
+      // Clear local storage
+      localStorage.removeItem("whiteboardData");
     }
-  }, [size, whiteboardService]);
-  
-  useEffect(() => {
-    if (whiteboardService) {
-      whiteboardService.setTool(tool);
-    }
-  }, [tool, whiteboardService]);
-  
+  };
+
+  // Don't render if not visible
+  if (!isVisible) return null;
+
   return (
-    <div className="whiteboard-container" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <div className="whiteboard-toolbar" style={{ display: 'flex', padding: '10px', borderBottom: '1px solid #ddd' }}>
-        <div className="tool-group" style={{ marginRight: '15px' }}>
-          <label htmlFor="color-picker">Color: </label>
+    <div style={styles.container}>
+      <div style={styles.toolbar}>
+        <div style={styles.toolGroup}>
+          <button
+            style={{
+              ...styles.toolButton,
+              backgroundColor: tool === "pen" ? "#4C7273" : "#041421",
+            }}
+            onClick={() => setTool("pen")}
+          >
+            <i className="fa-solid fa-pen"></i>
+          </button>
+          <button
+            style={{
+              ...styles.toolButton,
+              backgroundColor: tool === "eraser" ? "#4C7273" : "#041421",
+            }}
+            onClick={() => setTool("eraser")}
+          >
+            <i className="fa-solid fa-eraser"></i>
+          </button>
+        </div>
+        
+        <div style={styles.toolGroup}>
           <input
-            id="color-picker"
             type="color"
             value={color}
             onChange={(e) => setColor(e.target.value)}
+            style={styles.colorPicker}
+            disabled={tool === "eraser"}
           />
-        </div>
-        
-        <div className="tool-group" style={{ marginRight: '15px' }}>
-          <label htmlFor="size-slider">Size: </label>
-          <input
-            id="size-slider"
-            type="range"
-            min="1"
-            max="20"
-            value={size}
-            onChange={(e) => setSize(parseInt(e.target.value))}
-          />
-          <span>{size}px</span>
-        </div>
-        
-        <div className="tool-group" style={{ marginRight: '15px' }}>
-          <label htmlFor="tool-select">Tool: </label>
           <select
-            id="tool-select"
-            value={tool}
-            onChange={(e) => setTool(e.target.value)}
+            value={brushSize}
+            onChange={(e) => setBrushSize(parseInt(e.target.value))}
+            style={styles.brushSize}
           >
-            <option value="pen">Pen</option>
-            <option value="eraser">Eraser</option>
+            <option value="1">Fine</option>
+            <option value="3">Normal</option>
+            <option value="5">Thick</option>
+            <option value="10">Very Thick</option>
           </select>
         </div>
         
-        <button
-          onClick={() => whiteboardService.clearCanvas()}
-          style={{ marginRight: '10px', padding: '5px 10px' }}
-        >
-          Clear All
-        </button>
-        
-        <button
-          onClick={() => whiteboardService.undo()}
-          style={{ padding: '5px 10px' }}
-        >
-          Undo
+        <button style={styles.clearButton} onClick={clearWhiteboard}>
+          Clear Board
         </button>
       </div>
       
-      <div className="canvas-container" style={{ flex: 1, position: 'relative' }}>
+      <div style={styles.canvasContainer}>
         <canvas
           ref={canvasRef}
-          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', touchAction: 'none' }}
+          style={styles.canvas}
+          onMouseDown={startDrawing}
+          onMouseMove={draw}
+          onMouseUp={stopDrawing}
+          onMouseOut={stopDrawing}
         />
       </div>
     </div>
   );
+};
+
+const styles = {
+  container: {
+    display: "flex",
+    flexDirection: "column",
+    width: "100%",
+    height: "400px",
+    backgroundColor: "#ffffff",
+    borderRadius: "8px",
+    overflow: "hidden",
+    marginBottom: "20px",
+  },
+  toolbar: {
+    display: "flex",
+    justifyContent: "space-between",
+    padding: "10px",
+    backgroundColor: "#041421",
+    borderBottom: "1px solid #4C7273",
+  },
+  toolGroup: {
+    display: "flex",
+    gap: "10px",
+  },
+  toolButton: {
+    padding: "8px 12px",
+    fontSize: "14px",
+    borderRadius: "5px",
+    color: "#fff",
+    border: "1px solid #4C7273",
+    cursor: "pointer",
+    transition: "background 0.3s ease",
+  },
+  colorPicker: {
+    width: "30px",
+    height: "30px",
+    border: "none",
+    outline: "none",
+    cursor: "pointer",
+  },
+  brushSize: {
+    padding: "5px",
+    backgroundColor: "#041421",
+    color: "#fff",
+    border: "1px solid #4C7273",
+    borderRadius: "5px",
+  },
+  clearButton: {
+    padding: "8px 12px",
+    fontSize: "14px",
+    borderRadius: "5px",
+    color: "#fff",
+    backgroundColor: "#d9534f",
+    border: "none",
+    cursor: "pointer",
+  },
+  canvasContainer: {
+    flex: 1,
+    position: "relative",
+    backgroundColor: "#ffffff",
+  },
+  canvas: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    cursor: "crosshair",
+  },
 };
 
 export default Whiteboard;

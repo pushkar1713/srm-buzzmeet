@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import WebRTCService from "./services/WebRTCService";
 import Chat from "../src/components/Chat";
@@ -6,6 +7,7 @@ import LocalVideo from "../src/components/LocalVideo";
 import Notification from "../src/components/Notification";
 import VideoGrid from "../src/components/VideoGrid";
 import Subtitles from "../src/components/Subtitles";
+import Whiteboard from "../src/components/Whiteboard"; // Import Whiteboard component
 import "./App.css";
 import { io } from "socket.io-client";
 
@@ -20,6 +22,7 @@ function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [subtitlesActive, setSubtitlesActive] = useState(false);
+  const [showWhiteboard, setShowWhiteboard] = useState(false); // Added for whiteboard
 
   // Initialize WebRTC service
   useEffect(() => {
@@ -86,6 +89,7 @@ function App() {
       setInRoom(false);
       setIsAdmin(false);
       setRemoteStreams({});
+      setShowWhiteboard(false); // Hide whiteboard when leaving room
     });
 
     webrtcService.addEventListener("newUser", (e) => {
@@ -116,6 +120,7 @@ function App() {
       setNotification("You were kicked out");
       setInRoom(false);
       setRemoteStreams({});
+      setShowWhiteboard(false); // Hide whiteboard when kicked
     });
 
     webrtcService.addEventListener("error", (e) => {
@@ -176,6 +181,11 @@ function App() {
     setNotification(subtitlesActive ? "Subtitles Off" : "Subtitles On");
   };
 
+  const toggleWhiteboard = () => {
+    setShowWhiteboard(!showWhiteboard);
+    setNotification(showWhiteboard ? "Whiteboard Hidden" : "Whiteboard Visible");
+  };
+
   return (
     <div className="app">
       <h1>
@@ -195,9 +205,14 @@ function App() {
         inRoom={inRoom}
         onToggleSubtitles={toggleSubtitles}
         subtitlesActive={subtitlesActive}
+        onToggleWhiteboard={toggleWhiteboard} // Add whiteboard toggle handler
+        showWhiteboard={showWhiteboard} // Add whiteboard state
       />
 
       <Notification message={notification} />
+
+      {/* Add Whiteboard Component */}
+      {inRoom && <Whiteboard webrtc={webrtc} isVisible={showWhiteboard} />}
 
       <div className="videos-section">
         <VideoGrid

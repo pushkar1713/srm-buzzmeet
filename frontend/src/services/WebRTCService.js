@@ -1,3 +1,4 @@
+
 import { io } from "socket.io-client";
 
 class WebRTCService {
@@ -112,6 +113,20 @@ class WebRTCService {
       message: message,
       senderName: this._myName,
     });
+  }
+
+  // Whiteboard method integration
+  sendWhiteboardData(imageData) {
+    if (!this.room) {
+      this.warn("You are not in a room");
+      return;
+    }
+    
+    this._sendMessage(
+      { type: "whiteboard", data: imageData },
+      null, // Send to all users (broadcast)
+      this.room
+    );
   }
 
   async _handleChatbotPrompt(prompt) {
@@ -532,6 +547,14 @@ class WebRTCService {
         this._emit("chatMessage", {
           message: message.message,
           senderName: message.senderName,
+        });
+        return;
+      }
+
+      // Handle whiteboard messages
+      if (message.type === "whiteboard") {
+        this._emit("whiteboardData", {
+          data: message.data,
         });
         return;
       }
