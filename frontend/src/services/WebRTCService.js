@@ -46,7 +46,7 @@ class WebRTCService {
     this._mediaRecorder = null;
     this._recordedChunks = [];
     this.eventListeners = {};
-    
+
     // Hardcoded Gemini API key as requested
     this.geminiKey = "AIzaSyBrpwAvs2d5KyXmatO_j2zFDPZojqoOEI0";
     this.chatHistory = {}; // Store conversation history per room
@@ -132,18 +132,19 @@ class WebRTCService {
   async _handleChatbotPrompt(prompt) {
     // Check if Gemini API key is available
     if (!this.geminiKey) {
-      const errorMessage = "Gemini API key is not configured. Please set it up to use the AI bot.";
+      const errorMessage =
+        "Gemini API key is not configured. Please set it up to use the AI bot.";
       this._sendMessage(
         { type: "chat", message: errorMessage, senderName: "AI Bot" },
         null,
         this.room
       );
-      
+
       this._emit("chatMessage", {
         message: errorMessage,
         senderName: "AI Bot",
       });
-      
+
       this.error("Gemini API Error: Missing API key");
       return;
     }
@@ -164,19 +165,19 @@ class WebRTCService {
       // Add the user's message to chat history
       this.chatHistory[this.room].push({
         role: "user",
-        parts: [{ text: prompt }]
+        parts: [{ text: prompt }],
       });
 
       // Prepare the chat request
       const chatHistory = this.chatHistory[this.room];
-      
+
       // Call the Gemini API
       const response = await this._callGeminiAPI(prompt, chatHistory);
 
       // Add the AI's response to chat history
       this.chatHistory[this.room].push({
         role: "model",
-        parts: [{ text: response }]
+        parts: [{ text: response }],
       });
 
       // Broadcast the AI's response to everyone in the room
@@ -199,12 +200,12 @@ class WebRTCService {
         null,
         this.room
       );
-      
+
       this._emit("chatMessage", {
         message: errorMessage,
         senderName: "AI Bot",
       });
-      
+
       this.error("Gemini API Error:", error);
     }
   }
@@ -213,10 +214,11 @@ class WebRTCService {
     try {
       // Use the hardcoded API key
       const apiKey = this.geminiKey;
-      
+
       // Updated API URL - using v1 instead of v1beta
-      const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
-      
+      const url =
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+
       const requestBody = {
         contents: chatHistory,
         generationConfig: {
@@ -228,25 +230,25 @@ class WebRTCService {
         safetySettings: [
           {
             category: "HARM_CATEGORY_HARASSMENT",
-            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+            threshold: "BLOCK_MEDIUM_AND_ABOVE",
           },
           {
             category: "HARM_CATEGORY_HATE_SPEECH",
-            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+            threshold: "BLOCK_MEDIUM_AND_ABOVE",
           },
           {
             category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+            threshold: "BLOCK_MEDIUM_AND_ABOVE",
           },
           {
             category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-            threshold: "BLOCK_MEDIUM_AND_ABOVE"
-          }
-        ]
+            threshold: "BLOCK_MEDIUM_AND_ABOVE",
+          },
+        ],
       };
-  
+
       this.log("Sending request to Gemini API");
-  
+
       const response = await fetch(`${url}?key=${apiKey}`, {
         method: "POST",
         headers: {
@@ -254,19 +256,20 @@ class WebRTCService {
         },
         body: JSON.stringify(requestBody),
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         this.error("Gemini API error response:", errorData);
         throw new Error(errorData.error?.message || "Unknown API error");
       }
-  
+
       const data = await response.json();
-      
+
       // Extract the response text from Gemini
-      const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text || 
+      const generatedText =
+        data.candidates?.[0]?.content?.parts?.[0]?.text ||
         "I'm sorry, I couldn't generate a response.";
-        
+
       return generatedText;
     } catch (error) {
       this.error("Error calling Gemini API:", error);
@@ -335,7 +338,7 @@ class WebRTCService {
     }
     this.isInitiator = false;
     this.socket.emit("leave room", this.room);
-    
+
     // Clear chat history for this room
     if (this.chatHistory[this.room]) {
       delete this.chatHistory[this.room];
@@ -394,6 +397,7 @@ class WebRTCService {
     this._mediaRecorder.onstop = () => {
       const audioBlob = new Blob(this._recordedChunks, { type: "audio/webm" });
       this._emit("recordingComplete", { audioBlob });
+      this._downloadRecording(audioBlob);
     };
 
     this._mediaRecorder.start();
@@ -405,6 +409,33 @@ class WebRTCService {
       this._mediaRecorder.stop();
       this.log("Recording stopped");
     }
+  }
+
+  _downloadRecording(blob) {
+    // Create download link
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+
+    // Generate filename with timestamp
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const filename = `recording-${timestamp}.webm`;
+
+    // Configure download element
+    a.style.display = "none";
+    a.href = url;
+    a.download = filename;
+
+    // Add to document, trigger click, then remove
+    document.body.appendChild(a);
+    a.click();
+
+    // Cleanup
+    setTimeout(() => {
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    }, 100);
+
+    this.log("Recording download triggered:", filename);
   }
 
   replaceVideoTrack(track) {
@@ -487,12 +518,12 @@ class WebRTCService {
 
         this.room = null;
         this._removeUser();
-        
+
         // Clear chat history for this room
         if (this.chatHistory[room]) {
           delete this.chatHistory[room];
         }
-        
+
         this._emit("leftRoom", {
           roomId: room,
         });
